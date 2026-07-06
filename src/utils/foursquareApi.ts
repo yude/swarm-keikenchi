@@ -123,6 +123,13 @@ export async function fetchCheckins(
     throw new Error(`予期しないレスポンス形式: ${JSON.stringify(data).substring(0, 200)}`);
   }
   
+  console.log('API Response:', {
+    itemsCount: data.response.checkins.items.length,
+    earliestTimestamp: data.response.earliestTimestamp,
+    checkinsCount: data.response.checkins.count,
+    fullResponse: data.response,
+  });
+  
   return {
     items: data.response.checkins.items || [],
     earliestTimestamp: data.response.earliestTimestamp,
@@ -136,13 +143,20 @@ export async function fetchAllCheckins(
   const allCheckins: FoursquareCheckin[] = [];
   let beforeTimestamp: number | undefined;
   const batchSize = 100;
+  let pageCount = 0;
 
   while (true) {
+    pageCount++;
+    console.log(`Fetching page ${pageCount}, beforeTimestamp: ${beforeTimestamp}`);
+    
     const result = await fetchCheckins(accessToken, batchSize, beforeTimestamp);
+    console.log(`Page ${pageCount}: got ${result.items.length} items, earliestTimestamp: ${result.earliestTimestamp}`);
+    
     allCheckins.push(...result.items);
     onProgress?.(allCheckins.length);
 
     if (result.items.length < batchSize || !result.earliestTimestamp) {
+      console.log(`Stopping pagination: items=${result.items.length}, batchSize=${batchSize}, hasTimestamp=${!!result.earliestTimestamp}`);
       break;
     }
     
@@ -151,6 +165,7 @@ export async function fetchAllCheckins(
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
+  console.log(`Total pages fetched: ${pageCount}, total checkins: ${allCheckins.length}`);
   return allCheckins;
 }
 
