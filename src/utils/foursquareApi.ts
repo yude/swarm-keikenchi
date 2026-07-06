@@ -123,24 +123,24 @@ export async function fetchCheckins(
     throw new Error(`予期しないレスポンス形式: ${JSON.stringify(data).substring(0, 200)}`);
   }
   
-  const response = data.response;
-  const checkins = response.checkins;
+  const apiResponse = data.response;
+  const checkins = apiResponse.checkins;
   const items = checkins.items || [];
   
   console.log('API Response Details:', {
-    responseKeys: Object.keys(response),
+    responseKeys: Object.keys(apiResponse),
     itemsCount: items.length,
-    earliestTimestamp: response.earliestTimestamp,
+    earliestTimestamp: apiResponse.earliestTimestamp,
     checkinsCount: checkins.count,
     checkinsKeys: Object.keys(checkins),
     firstItemTimestamp: items[0]?.createdAt,
     lastItemTimestamp: items[items.length - 1]?.createdAt,
-    fullResponseJSON: JSON.stringify(response, null, 2),
+    fullResponseJSON: JSON.stringify(apiResponse, null, 2),
   });
   
   return {
     items: items,
-    earliestTimestamp: response.earliestTimestamp,
+    earliestTimestamp: apiResponse.earliestTimestamp,
   };
 }
 
