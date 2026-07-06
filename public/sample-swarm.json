@@ -1,0 +1,144 @@
+{
+  "checkins": [
+    {
+      "id": "1",
+      "createdAt": 1609459200,
+      "venue": {
+        "name": "東京駅",
+        "location": {
+          "lat": 35.6812,
+          "lng": 139.7671,
+          "state": "Tokyo",
+          "country": "Japan",
+          "city": "Tokyo"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "createdAt": 1612137600,
+      "venue": {
+        "name": "大阪城",
+        "location": {
+          "lat": 34.6873,
+          "lng": 135.5259,
+          "state": "Osaka",
+          "country": "Japan",
+          "city": "Osaka"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "createdAt": 1614556800,
+      "venue": {
+        "name": "京都駅",
+        "location": {
+          "lat": 34.9858,
+          "lng": 135.7588,
+          "state": "Kyoto",
+          "country": "Japan",
+          "city": "Kyoto"
+        }
+      }
+    },
+    {
+      "id": "4",
+      "createdAt": 1617235200,
+      "venue": {
+        "name": "札幌駅",
+        "location": {
+          "lat": 43.0687,
+          "lng": 141.3508,
+          "state": "Hokkaido",
+          "country": "Japan",
+          "city": "Sapporo"
+        }
+      }
+    },
+    {
+      "id": "5",
+      "createdAt": 1619827200,
+      "venue": {
+        "name": "福岡空港",
+        "location": {
+          "lat": 33.5902,
+          "lng": 130.4212,
+          "state": "Fukuoka",
+          "country": "Japan",
+          "city": "Fukuoka"
+        }
+      }
+    },
+    {
+      "id": "6",
+      "createdAt": 1622505600,
+      "venue": {
+        "name": "渋谷スクランブル交差点",
+        "location": {
+          "lat": 35.6595,
+          "lng": 139.7004,
+          "state": "Tokyo",
+          "country": "Japan",
+          "city": "Tokyo"
+        }
+      }
+    },
+    {
+      "id": "7",
+      "createdAt": 1625097600,
+      "venue": {
+        "name": "横浜駅",
+        "location": {
+          "lat": 35.4657,
+          "lng": 139.6223,
+          "state": "Kanagawa",
+          "country": "Japan",
+          "city": "Yokohama"
+        }
+      }
+    },
+    {
+      "id": "8",
+      "createdAt": 1627776000,
+      "venue": {
+        "name": "名古屋駅",
+        "location": {
+          "lat": 35.1709,
+          "lng": 136.8815,
+          "state": "Aichi",
+          "country": "Japan",
+          "city": "Nagoya"
+        }
+      }
+    },
+    {
+      "id": "9",
+      "createdAt": 1630454400,
+      "venue": {
+        "name": "広島平和記念公園",
+        "location": {
+          "lat": 34.3955,
+          "lng": 132.4536,
+          "state": "Hiroshima",
+          "country": "Japan",
+          "city": "Hiroshima"
+        }
+      }
+    },
+    {
+      "id": "10",
+      "createdAt": 1633046400,
+      "venue": {
+        "name": "仙台駅",
+        "location": {
+          "lat": 38.2601,
+          "lng": 140.8821,
+          "state": "Miyagi",
+          "country": "Japan",
+          "city": "Sendai"
+        }
+      }
+    }
+  ]
+}
