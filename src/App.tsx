@@ -6,6 +6,7 @@ import {
   getAuthUrl,
   getToken,
   clearToken,
+  saveToken,
   fetchAllCheckins,
   type FoursquareCheckin,
 } from "./utils/foursquareApi";
@@ -116,7 +117,7 @@ function App() {
   const handleFoursquareFetch = useCallback(async () => {
     const token = getToken();
     if (!token) {
-      handleFoursquareLogin();
+      setError("アクセストークンを入力してください");
       return;
     }
 
@@ -134,15 +135,22 @@ function App() {
     } catch (err) {
       if (err instanceof Error && err.message.includes("401")) {
         clearToken();
-        setIsLoggedIn(false);
-        setError("セッションが切れました。再度ログインしてください。");
+        setError("トークンが無効です。再度入力してください。");
       } else {
         setError(err instanceof Error ? err.message : "データ取得に失敗しました");
       }
     } finally {
       setIsLoading(false);
     }
-  }, [handleFoursquareLogin]);
+  }, []);
+
+  const handleTokenInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const token = e.target.value.trim();
+    if (token) {
+      saveToken(token);
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   const handleLogout = useCallback(() => {
     clearToken();
@@ -219,28 +227,79 @@ function App() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4">
-                Foursquare Swarmでログイン
+                Foursquare Swarmデータ連携
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Foursquareアカウントでログインすると、チェックイン履歴から自動的に経県値を計算します。
+                Foursquareアカウントでログインして、チェックイン履歴を取得します。
               </p>
               {isLoggedIn ? (
-                <button
-                  onClick={handleFoursquareFetch}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  チェックインデータを取得
-                </button>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    トークン設定済み
+                  </div>
+                  <button
+                    onClick={handleFoursquareFetch}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    チェックインデータを取得
+                  </button>
+                </div>
               ) : (
-                <button
-                  onClick={handleFoursquareLogin}
-                  className="px-6 py-3 bg-[#F94877] text-white rounded-lg hover:bg-[#e03d68] transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6zm0-8H9V7h6v2z"/>
-                  </svg>
-                  Foursquareでログイン
-                </button>
+                <div className="space-y-4">
+                  <button
+                    onClick={handleFoursquareLogin}
+                    className="w-full px-6 py-3 bg-[#F94877] text-white rounded-lg hover:bg-[#e03d68] transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6zm0-8H9V7h6v2z"/>
+                    </svg>
+                    Foursquareでログイン
+                  </button>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 h-px bg-gray-300"></div>
+                    <span className="text-xs text-gray-500">または</span>
+                    <div className="flex-1 h-px bg-gray-300"></div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-2">
+                      アクセストークンを手動入力
+                    </label>
+                    <input
+                      type="text"
+                      id="token"
+                      placeholder="Foursquare APIアクセストークンを入力"
+                      onChange={handleTokenInput}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <details className="text-xs text-gray-500">
+                    <summary className="cursor-pointer hover:text-gray-700">
+                      トークンの取得方法
+                    </summary>
+                    <div className="mt-2 bg-gray-50 p-3 rounded">
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>
+                          <a
+                            href="https://foursquare.com/developers/explore#req=users/self/checkins"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            Foursquare API Explorer
+                          </a>
+                          にアクセス
+                        </li>
+                        <li>Foursquareアカウントでログイン</li>
+                        <li>ページ上部の「OAuth Token」をコピー</li>
+                      </ol>
+                    </div>
+                  </details>
+                </div>
               )}
             </div>
 
