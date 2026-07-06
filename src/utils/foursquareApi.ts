@@ -135,7 +135,7 @@ export async function fetchAllCheckins(
 ): Promise<FoursquareCheckin[]> {
   const allCheckins: FoursquareCheckin[] = [];
   let beforeTimestamp: number | undefined;
-  const batchSize = 250;
+  const batchSize = 100;
 
   while (true) {
     const result = await fetchCheckins(accessToken, batchSize, beforeTimestamp);
