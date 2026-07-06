@@ -123,7 +123,7 @@ export async function parseSwarmCsv(file: File): Promise<ParsedData> {
   const lines = text.split("\n").filter((l) => l.trim());
 
   if (lines.length < 2) {
-    throw new Error("CSVファイルが空または不正です");
+    throw new Error("CSV ファイルが空または不正です");
   }
 
   const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
@@ -187,5 +187,5 @@ export function parseFile(file: File): Promise<ParsedData> {
   } else if (file.name.endsWith(".csv")) {
     return parseSwarmCsv(file);
   }
-  throw new Error("JSONまたはCSVファイルのみ対応しています");
+  throw new Error("JSON または CSV ファイルのみ対応しています");
 }

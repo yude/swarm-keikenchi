@@ -208,7 +208,7 @@ function App() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">経県値マップ</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Foursquare Swarmのチェックインデータから訪問した都道府県を可視化
+              Foursquare Swarm のチェックインデータから訪問した都道府県を可視化
             </p>
           </div>
           {isLoggedIn && (
@@ -227,10 +227,10 @@ function App() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4">
-                Foursquare Swarmデータ連携
+                Foursquare Swarm とデータを連携する
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Foursquareアカウントでログインして、チェックイン履歴を取得します。
+                Foursquare アカウントでログインして、チェックイン履歴を取得します。
               </p>
               {isLoggedIn ? (
                 <div className="space-y-4">
@@ -272,7 +272,7 @@ function App() {
                     <input
                       type="text"
                       id="token"
-                      placeholder="Foursquare APIアクセストークンを入力"
+                      placeholder="Foursquare API アクセストークンを入力"
                       onChange={handleTokenInput}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -333,7 +333,7 @@ function App() {
                 />
               </svg>
               <p className="mt-4 text-lg text-gray-700">
-                Swarmのエクスポートファイルをドロップ
+                Swarm のエクスポートファイルをドロップ
               </p>
               <p className="mt-2 text-sm text-gray-500">または</p>
               <label className="mt-4 inline-block">
@@ -347,7 +347,7 @@ function App() {
                   className="hidden"
                 />
               </label>
-              <p className="mt-4 text-xs text-gray-400">JSON / CSV形式に対応</p>
+              <p className="mt-4 text-xs text-gray-400">JSON / CSV 形式に対応</p>
               <div className="mt-4">
                 <button
                   onClick={handleLoadSample}
