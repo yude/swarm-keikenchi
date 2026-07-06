@@ -84,14 +84,17 @@ export async function getAccessToken(code: string): Promise<string> {
 export async function fetchCheckins(
   accessToken: string,
   limit: number = 250,
-  offset: number = 0
-): Promise<FoursquareCheckin[]> {
+  beforeTimestamp?: number
+): Promise<{ items: FoursquareCheckin[]; earliestTimestamp?: number }> {
   const params = new URLSearchParams({
     oauth_token: accessToken,
     v: '20221002',
     limit: limit.toString(),
-    offset: offset.toString(),
   });
+
+  if (beforeTimestamp) {
+    params.append('beforeTimestamp', beforeTimestamp.toString());
+  }
 
   const url = `https://api.foursquare.com/v2/users/self/historysearch?${params}`;
   const response = await fetch(url, {
@@ -120,7 +123,10 @@ export async function fetchCheckins(
     throw new Error(`予期しないレスポンス形式: ${JSON.stringify(data).substring(0, 200)}`);
   }
   
-  return data.response.checkins.items || [];
+  return {
+    items: data.response.checkins.items || [],
+    earliestTimestamp: data.response.earliestTimestamp,
+  };
 }
 
 export async function fetchAllCheckins(
@@ -128,18 +134,19 @@ export async function fetchAllCheckins(
   onProgress?: (fetched: number) => void
 ): Promise<FoursquareCheckin[]> {
   const allCheckins: FoursquareCheckin[] = [];
-  let offset = 0;
+  let beforeTimestamp: number | undefined;
   const batchSize = 250;
 
   while (true) {
-    const batch = await fetchCheckins(accessToken, batchSize, offset);
-    allCheckins.push(...batch);
+    const result = await fetchCheckins(accessToken, batchSize, beforeTimestamp);
+    allCheckins.push(...result.items);
     onProgress?.(allCheckins.length);
 
-    if (batch.length < batchSize) {
+    if (result.items.length < batchSize || !result.earliestTimestamp) {
       break;
     }
-    offset += batchSize;
+    
+    beforeTimestamp = result.earliestTimestamp;
 
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
