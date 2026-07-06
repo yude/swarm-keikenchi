@@ -84,19 +84,17 @@ export async function getAccessToken(code: string): Promise<string> {
 export async function fetchCheckins(
   accessToken: string,
   limit: number = 250,
-  beforeTimestamp?: number
-): Promise<{ items: FoursquareCheckin[]; earliestTimestamp?: number }> {
+  offset: number = 0
+): Promise<FoursquareCheckin[]> {
   const params = new URLSearchParams({
     oauth_token: accessToken,
     v: '20221002',
     limit: limit.toString(),
+    offset: offset.toString(),
+    sort: 'newestfirst',
   });
 
-  if (beforeTimestamp) {
-    params.append('beforeTimestamp', beforeTimestamp.toString());
-  }
-
-  const url = `https://api.foursquare.com/v2/users/self/historysearch?${params}`;
+  const url = `https://api.foursquare.com/v2/users/self/checkins?${params}`;
   const response = await fetch(url, {
     headers: {
       'Accept': 'application/json',
@@ -123,25 +121,10 @@ export async function fetchCheckins(
     throw new Error(`予期しないレスポンス形式: ${JSON.stringify(data).substring(0, 200)}`);
   }
   
-  const apiResponse = data.response;
-  const checkins = apiResponse.checkins;
-  const items = checkins.items || [];
+  const items = data.response.checkins.items || [];
+  console.log(`Fetched ${items.length} checkins (offset: ${offset})`);
   
-  console.log('API Response Details:', {
-    responseKeys: Object.keys(apiResponse),
-    itemsCount: items.length,
-    earliestTimestamp: apiResponse.earliestTimestamp,
-    checkinsCount: checkins.count,
-    checkinsKeys: Object.keys(checkins),
-    firstItemTimestamp: items[0]?.createdAt,
-    lastItemTimestamp: items[items.length - 1]?.createdAt,
-    fullResponseJSON: JSON.stringify(apiResponse, null, 2),
-  });
-  
-  return {
-    items: items,
-    earliestTimestamp: apiResponse.earliestTimestamp,
-  };
+  return items;
 }
 
 export async function fetchAllCheckins(
@@ -149,31 +132,23 @@ export async function fetchAllCheckins(
   onProgress?: (fetched: number) => void
 ): Promise<FoursquareCheckin[]> {
   const allCheckins: FoursquareCheckin[] = [];
-  let beforeTimestamp: number | undefined;
-  const batchSize = 100;
-  let pageCount = 0;
+  let offset = 0;
+  const batchSize = 250;
 
   while (true) {
-    pageCount++;
-    console.log(`Fetching page ${pageCount}, beforeTimestamp: ${beforeTimestamp}`);
-    
-    const result = await fetchCheckins(accessToken, batchSize, beforeTimestamp);
-    console.log(`Page ${pageCount}: got ${result.items.length} items, earliestTimestamp: ${result.earliestTimestamp}`);
-    
-    allCheckins.push(...result.items);
+    const batch = await fetchCheckins(accessToken, batchSize, offset);
+    allCheckins.push(...batch);
     onProgress?.(allCheckins.length);
 
-    if (result.items.length < batchSize || !result.earliestTimestamp) {
-      console.log(`Stopping pagination: items=${result.items.length}, batchSize=${batchSize}, hasTimestamp=${!!result.earliestTimestamp}`);
+    if (batch.length < batchSize) {
       break;
     }
-    
-    beforeTimestamp = result.earliestTimestamp;
+    offset += batchSize;
 
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
-  console.log(`Total pages fetched: ${pageCount}, total checkins: ${allCheckins.length}`);
+  console.log(`Total checkins fetched: ${allCheckins.length}`);
   return allCheckins;
 }
 
