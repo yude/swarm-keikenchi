@@ -42,8 +42,8 @@ VITE_FOURSQUARE_CLIENT_SECRET=your_client_secret
 
 ### API連携
 
-1. 「Foursquareでログイン」ボタンをクリック
-2. Foursquareアカウントで認証
+1. 「Foursquare でログイン」ボタンをクリック
+2. Foursquare アカウントで認証
 3. 「チェックインデータを取得」ボタンで全データを自動取得
 
 ### ファイルアップロード

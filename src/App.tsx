@@ -256,7 +256,7 @@ function App() {
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6zm0-8H9V7h6v2z"/>
                     </svg>
-                    Foursquareでログイン
+                    Foursquare でログイン
                   </button>
                   
                   <div className="flex items-center gap-4">
@@ -294,7 +294,7 @@ function App() {
                           </a>
                           にアクセス
                         </li>
-                        <li>Foursquareアカウントでログイン</li>
+                        <li>Foursquare アカウントでログイン</li>
                         <li>ページ上部の「OAuth Token」をコピー</li>
                       </ol>
                     </div>
