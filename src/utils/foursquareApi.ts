@@ -71,13 +71,29 @@ export async function fetchCheckins(
     sort: 'newestfirst',
   });
 
-  const response = await fetch(
-    `/api/foursquare/v2/users/self/checkins?${params}`
-  );
+  const url = `https://api.foursquare.com/v2/users/self/checkins?${params}`;
+  const response = await fetch(url);
+  
+  const text = await response.text();
+  
   if (!response.ok) {
-    throw new Error('チェックインデータの取得に失敗しました');
+    console.error('API Error Response:', text);
+    throw new Error(`APIエラー (${response.status}): ${text.substring(0, 200)}`);
   }
-  const data = await response.json();
+  
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    console.error('Invalid JSON Response:', text);
+    throw new Error(`無効なレスポンス: ${text.substring(0, 200)}`);
+  }
+  
+  if (!data.response?.checkins?.items) {
+    console.error('Unexpected Response Structure:', data);
+    throw new Error(`予期しないレスポンス形式: ${JSON.stringify(data).substring(0, 200)}`);
+  }
+  
   return data.response.checkins.items || [];
 }
 
