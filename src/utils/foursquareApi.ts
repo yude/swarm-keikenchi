@@ -33,12 +33,22 @@ export interface FoursquareCheckin {
 }
 
 export function getAuthUrl(): string {
+  const state = Math.random().toString(36).substring(7);
+  sessionStorage.setItem('oauth_state', state);
+  
   const params = new URLSearchParams({
     client_id: FOURSQUARE_CLIENT_ID,
     response_type: 'code',
     redirect_uri: FOURSQUARE_REDIRECT_URI,
+    state: state,
   });
   return `https://foursquare.com/oauth2/authenticate?${params}`;
+}
+
+export function validateState(state: string): boolean {
+  const savedState = sessionStorage.getItem('oauth_state');
+  sessionStorage.removeItem('oauth_state');
+  return savedState === state;
 }
 
 export async function getAccessToken(code: string): Promise<string> {
@@ -47,14 +57,27 @@ export async function getAccessToken(code: string): Promise<string> {
     client_secret: FOURSQUARE_CLIENT_SECRET,
     grant_type: 'authorization_code',
     redirect_uri: FOURSQUARE_REDIRECT_URI,
-    code,
+    code: code,
   });
 
-  const response = await fetch(`/oauth/foursquare/oauth2/access_token?${params}`);
+  const response = await fetch('/oauth/foursquare/oauth2/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  });
+
   if (!response.ok) {
-    throw new Error('アクセストークンの取得に失敗しました');
+    const errorText = await response.text();
+    console.error('OAuth token error:', errorText);
+    throw new Error(`アクセストークンの取得に失敗しました: ${response.status}`);
   }
+
   const data = await response.json();
+  if (!data.access_token) {
+    throw new Error('アクセストークンがレスポンスに含まれていません');
+  }
   return data.access_token;
 }
 
@@ -65,14 +88,17 @@ export async function fetchCheckins(
 ): Promise<FoursquareCheckin[]> {
   const params = new URLSearchParams({
     oauth_token: accessToken,
-    v: '20240101',
+    v: '20221002',
     limit: limit.toString(),
     offset: offset.toString(),
-    sort: 'newestfirst',
   });
 
-  const url = `https://api.foursquare.com/v2/users/self/checkins?${params}`;
-  const response = await fetch(url);
+  const url = `https://api.foursquare.com/v2/users/self/historysearch?${params}`;
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
   
   const text = await response.text();
   

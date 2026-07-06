@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getAccessToken, saveToken } from '../utils/foursquareApi';
+import { getAccessToken, saveToken, validateState } from '../utils/foursquareApi';
 
 export default function Callback() {
   const [searchParams] = useSearchParams();
@@ -9,8 +9,15 @@ export default function Callback() {
 
   useEffect(() => {
     const code = searchParams.get('code');
+    const state = searchParams.get('state');
+
     if (!code) {
       setError('認証コードが見つかりません');
+      return;
+    }
+
+    if (!state || !validateState(state)) {
+      setError('無効なstateパラメータです。セキュリティのため認証を中止しました。');
       return;
     }
 
