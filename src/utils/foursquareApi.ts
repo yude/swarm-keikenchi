@@ -123,16 +123,24 @@ export async function fetchCheckins(
     throw new Error(`予期しないレスポンス形式: ${JSON.stringify(data).substring(0, 200)}`);
   }
   
-  console.log('API Response:', {
-    itemsCount: data.response.checkins.items.length,
-    earliestTimestamp: data.response.earliestTimestamp,
-    checkinsCount: data.response.checkins.count,
-    fullResponse: data.response,
+  const response = data.response;
+  const checkins = response.checkins;
+  const items = checkins.items || [];
+  
+  console.log('API Response Details:', {
+    responseKeys: Object.keys(response),
+    itemsCount: items.length,
+    earliestTimestamp: response.earliestTimestamp,
+    checkinsCount: checkins.count,
+    checkinsKeys: Object.keys(checkins),
+    firstItemTimestamp: items[0]?.createdAt,
+    lastItemTimestamp: items[items.length - 1]?.createdAt,
+    fullResponseJSON: JSON.stringify(response, null, 2),
   });
   
   return {
-    items: data.response.checkins.items || [],
-    earliestTimestamp: data.response.earliestTimestamp,
+    items: items,
+    earliestTimestamp: response.earliestTimestamp,
   };
 }
 
