@@ -7,18 +7,16 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_FOURSQUARE_CLIENT_ID
-ARG VITE_FOURSQUARE_CLIENT_SECRET
-ENV VITE_FOURSQUARE_CLIENT_ID=$VITE_FOURSQUARE_CLIENT_ID
-ENV VITE_FOURSQUARE_CLIENT_SECRET=$VITE_FOURSQUARE_CLIENT_SECRET
-
 RUN npm run build
 
 FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 80
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

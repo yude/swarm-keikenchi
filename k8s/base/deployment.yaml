@@ -19,6 +19,17 @@ spec:
           image: keikenchi-map:latest
           ports:
             - containerPort: 80
+          env:
+            - name: VITE_FOURSQUARE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: foursquare-credentials
+                  key: client-id
+            - name: VITE_FOURSQUARE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: foursquare-credentials
+                  key: client-secret
           resources:
             requests:
               cpu: 50m

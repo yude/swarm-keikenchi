@@ -1,4 +1,20 @@
-const FOURSQUARE_CLIENT_ID = import.meta.env.VITE_FOURSQUARE_CLIENT_ID || '';
+declare global {
+  interface Window {
+    __CONFIG__?: {
+      foursquareClientId?: string;
+      foursquareClientSecret?: string;
+    };
+  }
+}
+
+const FOURSQUARE_CLIENT_ID =
+  window.__CONFIG__?.foursquareClientId ||
+  import.meta.env.VITE_FOURSQUARE_CLIENT_ID ||
+  '';
+const FOURSQUARE_CLIENT_SECRET =
+  window.__CONFIG__?.foursquareClientSecret ||
+  import.meta.env.VITE_FOURSQUARE_CLIENT_SECRET ||
+  '';
 const FOURSQUARE_REDIRECT_URI = window.location.origin + '/callback';
 
 export interface FoursquareCheckin {
@@ -28,7 +44,7 @@ export function getAuthUrl(): string {
 export async function getAccessToken(code: string): Promise<string> {
   const params = new URLSearchParams({
     client_id: FOURSQUARE_CLIENT_ID,
-    client_secret: import.meta.env.VITE_FOURSQUARE_CLIENT_SECRET || '',
+    client_secret: FOURSQUARE_CLIENT_SECRET,
     grant_type: 'authorization_code',
     redirect_uri: FOURSQUARE_REDIRECT_URI,
     code,

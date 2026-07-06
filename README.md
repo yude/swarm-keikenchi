@@ -62,22 +62,38 @@ npm run build
 
 ```bash
 # ビルド
-docker build -t ghcr.io/yude/swarm-keikenchi:latest \
-  --build-arg VITE_FOURSQUARE_CLIENT_ID=xxx \
-  --build-arg VITE_FOURSQUARE_CLIENT_SECRET=xxx \
-  .
+docker build -t ghcr.io/yude/swarm-keikenchi:latest .
 
-# 実行
-docker run -p 8080:80 ghcr.io/yude/swarm-keikenchi:latest
+# 実行（環境変数で認証情報を渡す）
+docker run -p 8080:80 \
+  -e VITE_FOURSQUARE_CLIENT_ID=xxx \
+  -e VITE_FOURSQUARE_CLIENT_SECRET=xxx \
+  ghcr.io/yude/swarm-keikenchi:latest
 ```
 
 ### Docker Compose
 
 ```bash
+# .envファイルに認証情報を設定
 docker compose up --build
 ```
 
 ### Kubernetes (Kustomize)
+
+1. Secretを作成:
+
+```bash
+# k8s/base/secret.yamlを編集して実際の認証情報を設定
+kubectl apply -f k8s/base/secret.yaml
+
+# またはコマンドラインで作成
+kubectl create secret generic foursquare-credentials \
+  --from-literal=client-id=YOUR_CLIENT_ID \
+  --from-literal=client-secret=YOUR_CLIENT_SECRET \
+  -n keikenchi-map
+```
+
+2. デプロイ:
 
 ```bash
 # 開発環境
@@ -87,13 +103,11 @@ kubectl apply -k k8s/overlays/development
 kubectl apply -k k8s/overlays/production
 ```
 
+SecretはPod起動時に環境変数として注入され、Nginxが起動時に`/config.js`を動的に生成してフロントエンドに認証情報を渡します。
+
 ### GitHub Actions
 
-リポジトリのSecretsに以下を設定:
-- `VITE_FOURSQUARE_CLIENT_ID`
-- `VITE_FOURSQUARE_CLIENT_SECRET`
-
-mainブランチへのpushまたはタグプッシュ時に自動的にビルド・プッシュされます。
+認証情報はビルド時に埋め込まれません。mainブランチへのpushまたはタグプッシュ時に自動的にビルド・プッシュされます。
 
 ## ライセンス
 

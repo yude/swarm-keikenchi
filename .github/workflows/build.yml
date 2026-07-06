@@ -57,6 +57,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            VITE_FOURSQUARE_CLIENT_ID=${{ secrets.VITE_FOURSQUARE_CLIENT_ID }}
-            VITE_FOURSQUARE_CLIENT_SECRET=${{ secrets.VITE_FOURSQUARE_CLIENT_SECRET }}
