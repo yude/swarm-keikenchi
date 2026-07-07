@@ -1,4 +1,5 @@
 import { prefectureByName, type Prefecture } from "../data/prefectures";
+import { analyzeCheckins, type PrefectureAnalysis } from "./visitLevelAnalyzer";
 
 export interface Checkin {
   id?: string;
@@ -15,6 +16,7 @@ export interface ParsedData {
   checkins: Checkin[];
   visitedPrefectures: Set<string>;
   prefectureCheckins: Map<string, Checkin[]>;
+  prefectureAnalysis: Map<string, PrefectureAnalysis>;
 }
 
 const stateToPrefecture: Record<string, string> = {
@@ -225,7 +227,14 @@ function processCheckins(checkins: Checkin[]): ParsedData {
     }
   }
 
-  return { checkins, visitedPrefectures, prefectureCheckins };
+  // 各都道府県の訪問レベルを分析
+  const prefectureAnalysis = new Map<string, PrefectureAnalysis>();
+  for (const [prefCode, checkins] of prefectureCheckins.entries()) {
+    const analysis = analyzeCheckins(checkins);
+    prefectureAnalysis.set(prefCode, analysis);
+  }
+
+  return { checkins, visitedPrefectures, prefectureCheckins, prefectureAnalysis };
 }
 
 export function parseFile(file: File): Promise<ParsedData> {

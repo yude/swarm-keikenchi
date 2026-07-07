@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import JapanMap from "./components/JapanMap";
 import { parseFile, type ParsedData, type Checkin } from "./utils/swarmParser";
 import { prefectures, regions } from "./data/prefectures";
+import { analyzeCheckins, type PrefectureAnalysis } from "./utils/visitLevelAnalyzer";
 import {
   getAuthUrl,
   getToken,
@@ -78,7 +79,14 @@ function processCheckins(checkins: Checkin[]): ParsedData {
     console.warn('Unmatched states:', Array.from(unmatchedStates));
   }
 
-  return { checkins, visitedPrefectures, prefectureCheckins };
+  // 各都道府県の訪問レベルを分析
+  const prefectureAnalysis = new Map<string, PrefectureAnalysis>();
+  for (const [prefCode, checkins] of prefectureCheckins.entries()) {
+    const analysis = analyzeCheckins(checkins);
+    prefectureAnalysis.set(prefCode, analysis);
+  }
+
+  return { checkins, visitedPrefectures, prefectureCheckins, prefectureAnalysis };
 }
 
 function App() {
@@ -89,6 +97,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [fetchProgress, setFetchProgress] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(!!getToken());
+  const [displayMode, setDisplayMode] = useState<"count" | "level">("count");
 
   useEffect(() => {
     setIsLoggedIn(!!getToken());
@@ -403,10 +412,34 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm p-4">
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setDisplayMode("count")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      displayMode === "count"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    訪問回数
+                  </button>
+                  <button
+                    onClick={() => setDisplayMode("level")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      displayMode === "level"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    訪問レベル
+                  </button>
+                </div>
                 <JapanMap
                   visitedPrefectures={data!.visitedPrefectures}
                   prefectureCheckins={data!.prefectureCheckins}
+                  prefectureAnalysis={data!.prefectureAnalysis}
                   onPrefectureClick={setSelectedPref}
+                  displayMode={displayMode}
                 />
               </div>
             </div>
@@ -466,28 +499,57 @@ function App() {
                     リセット
                   </button>
                 </div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-[#1d4ed8]" />
-                    <span className="text-gray-700">10回以上</span>
+                {displayMode === "count" ? (
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#1d4ed8]" />
+                      <span className="text-gray-700">10回以上</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#3b82f6]" />
+                      <span className="text-gray-700">5-9回</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#60a5fa]" />
+                      <span className="text-gray-700">2-4回</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#93c5fd]" />
+                      <span className="text-gray-700">1回</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#e5e7eb]" />
+                      <span className="text-gray-700">未訪問</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-[#3b82f6]" />
-                    <span className="text-gray-700">5-9回</span>
+                ) : (
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#dc2626]" />
+                      <span className="text-gray-700">居住</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#ea580c]" />
+                      <span className="text-gray-700">宿泊</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#16a34a]" />
+                      <span className="text-gray-700">訪問</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#2563eb]" />
+                      <span className="text-gray-700">接地</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#7c3aed]" />
+                      <span className="text-gray-700">通過</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#e5e7eb]" />
+                      <span className="text-gray-700">未踏</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-[#60a5fa]" />
-                    <span className="text-gray-700">2-4回</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-[#93c5fd]" />
-                    <span className="text-gray-700">1回</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-[#e5e7eb]" />
-                    <span className="text-gray-700">未訪問</span>
-                  </div>
-                </div>
+                )}
               </div>
 
               {selectedPrefData && (

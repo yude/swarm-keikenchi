@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo";
 import * as topojson from "topojson-client";
 import { prefectures } from "../data/prefectures";
+import { getVisitLevelColor, type PrefectureAnalysis } from "../utils/visitLevelAnalyzer";
 
 interface JapanMapProps {
   visitedPrefectures: Set<string>;
   prefectureCheckins: Map<string, unknown[]>;
+  prefectureAnalysis?: Map<string, PrefectureAnalysis>;
   onPrefectureClick?: (code: string) => void;
+  displayMode?: "count" | "level";
 }
 
 interface GeoFeature {
@@ -69,7 +72,9 @@ function findPrefectureCode(feature: GeoFeature): string | undefined {
 export default function JapanMap({
   visitedPrefectures,
   prefectureCheckins,
+  prefectureAnalysis,
   onPrefectureClick,
+  displayMode = "count",
 }: JapanMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [geoData, setGeoData] = useState<GeoFeatureCollection | null>(null);
@@ -128,6 +133,7 @@ export default function JapanMap({
       const checkinCount = prefCode
         ? prefectureCheckins.get(prefCode)?.length || 0
         : 0;
+      const analysis = prefCode ? prefectureAnalysis?.get(prefCode) : undefined;
 
       const pathEl = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -140,10 +146,14 @@ export default function JapanMap({
 
       let fillColor = "#e5e7eb";
       if (isVisited) {
-        if (checkinCount >= 10) fillColor = "#1d4ed8";
-        else if (checkinCount >= 5) fillColor = "#3b82f6";
-        else if (checkinCount >= 2) fillColor = "#60a5fa";
-        else fillColor = "#93c5fd";
+        if (displayMode === "level" && analysis) {
+          fillColor = getVisitLevelColor(analysis.level);
+        } else {
+          if (checkinCount >= 10) fillColor = "#1d4ed8";
+          else if (checkinCount >= 5) fillColor = "#3b82f6";
+          else if (checkinCount >= 2) fillColor = "#60a5fa";
+          else fillColor = "#93c5fd";
+        }
       }
 
       pathEl.setAttribute("fill", fillColor);
@@ -171,7 +181,7 @@ export default function JapanMap({
 
       g.appendChild(pathEl);
     });
-  }, [geoData, visitedPrefectures, prefectureCheckins, onPrefectureClick]);
+  }, [geoData, visitedPrefectures, prefectureCheckins, prefectureAnalysis, displayMode, onPrefectureClick]);
 
   if (loading) {
     return (
@@ -187,6 +197,9 @@ export default function JapanMap({
   const hoveredCheckinCount = hoveredPref
     ? prefectureCheckins.get(hoveredPref)?.length || 0
     : 0;
+  const hoveredAnalysis = hoveredPref
+    ? prefectureAnalysis?.get(hoveredPref)
+    : undefined;
 
   return (
     <div className="relative">
@@ -203,6 +216,12 @@ export default function JapanMap({
               ? `${hoveredCheckinCount}回のチェックイン`
               : "未訪問"}
           </div>
+          {hoveredAnalysis && (
+            <div className="text-xs text-gray-500 mt-1">
+              {hoveredAnalysis.uniqueDays}日間滞在 / {hoveredAnalysis.totalHours}時間
+              {hoveredAnalysis.hasNightStay && " / 夜間滞在あり"}
+            </div>
+          )}
         </div>
       )}
     </div>
