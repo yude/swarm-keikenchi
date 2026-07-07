@@ -37,6 +37,21 @@ export function analyzeCheckins(checkins: Checkin[]): PrefectureAnalysis {
     return hour >= 22 || hour < 6;
   });
 
+  // 2日目に朝（6時以降）のチェックインがあるか確認
+  const hasMorningCheckinOnSecondDay = (() => {
+    if (uniqueDays < 2) return false;
+    
+    const sortedByDate = [...checkins].sort((a, b) => a.createdAt - b.createdAt);
+    const firstDay = new Date(sortedByDate[0].createdAt * 1000).toDateString();
+    
+    // 最初のチェックインとは異なる日で、かつ朝6時以降のチェックインを探す
+    return sortedByDate.some((c) => {
+      const date = new Date(c.createdAt * 1000);
+      const hour = date.getHours();
+      return date.toDateString() !== firstDay && hour >= 6 && hour < 12;
+    });
+  })();
+
   // 滞在時間を推定（チェックイン間隔から）
   const sortedCheckins = [...checkins].sort((a, b) => a.createdAt - b.createdAt);
   let totalHours = 0;
@@ -59,7 +74,7 @@ export function analyzeCheckins(checkins: Checkin[]): PrefectureAnalysis {
   const level = determineVisitLevel({
     checkinCount: checkins.length,
     uniqueDays,
-    hasNightStay,
+    hasMorningCheckinOnSecondDay,
     totalHours,
   });
 
@@ -75,13 +90,13 @@ export function analyzeCheckins(checkins: Checkin[]): PrefectureAnalysis {
 function determineVisitLevel(params: {
   checkinCount: number;
   uniqueDays: number;
-  hasNightStay: boolean;
+  hasMorningCheckinOnSecondDay: boolean;
   totalHours: number;
 }): VisitLevel {
-  const { checkinCount, uniqueDays, hasNightStay, totalHours } = params;
+  const { checkinCount, uniqueDays, hasMorningCheckinOnSecondDay, totalHours } = params;
 
-  // 宿泊: 夜間滞在あり、または2日以上滞在
-  if (hasNightStay || uniqueDays >= 2) {
+  // 宿泊: 2日以上滞在 + 2日目の朝（6時-12時）にチェックインがある
+  if (uniqueDays >= 2 && hasMorningCheckinOnSecondDay) {
     return "stayed";
   }
 
