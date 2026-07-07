@@ -525,10 +525,6 @@ function App() {
                 ) : (
                   <div className="space-y-1 text-sm">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded bg-[#dc2626]" />
-                      <span className="text-gray-700">居住</span>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded bg-[#ea580c]" />
                       <span className="text-gray-700">宿泊</span>
                     </div>

@@ -1,7 +1,6 @@
 import { type Checkin } from "./swarmParser";
 
 export type VisitLevel = 
-  | "lived"      // 居住
   | "stayed"     // 宿泊
   | "visited"    // 訪問
   | "landed"     // 接地
@@ -81,11 +80,6 @@ function determineVisitLevel(params: {
 }): VisitLevel {
   const { checkinCount, uniqueDays, hasNightStay, totalHours } = params;
 
-  // 居住: 3日以上滞在 + 夜間滞在あり、または総滞在時間が48時間以上
-  if ((uniqueDays >= 3 && hasNightStay) || totalHours >= 48) {
-    return "lived";
-  }
-
   // 宿泊: 夜間滞在あり、または2日以上滞在
   if (hasNightStay || uniqueDays >= 2) {
     return "stayed";
@@ -111,7 +105,6 @@ function determineVisitLevel(params: {
 
 export function getVisitLevelLabel(level: VisitLevel): string {
   const labels: Record<VisitLevel, string> = {
-    lived: "居住",
     stayed: "宿泊",
     visited: "訪問",
     landed: "接地",
@@ -123,7 +116,6 @@ export function getVisitLevelLabel(level: VisitLevel): string {
 
 export function getVisitLevelColor(level: VisitLevel): string {
   const colors: Record<VisitLevel, string> = {
-    lived: "#dc2626",      // 赤
     stayed: "#ea580c",     // オレンジ
     visited: "#16a34a",    // 緑
     landed: "#2563eb",     // 青
